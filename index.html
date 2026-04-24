@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Planning</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=DM+Mono:wght@300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:           #0a0f0c;
+    --surface:      #111814;
+    --surface2:     #162018;
+    --surface3:     #1c2a1e;
+    --border:       #1e2e22;
+    --border2:      #28402c;
+    --green:        #3d7a50;
+    --green-dim:    #1e3d28;
+    --green-bright: #5faa78;
+    --teal:         #2a6868;
+    --teal-dim:     #153838;
+    --teal-bright:  #4a9999;
+    --brown:        #6b4e2e;
+    --brown-dim:    #3a2a18;
+    --brown-bright: #a07848;
+    --text:         #b8d0b0;
+    --text-dim:     #7a9878;
+    --muted:        #4a6848;
+    --muted2:       #304830;
+    --ink:          #e0eedd;
+    --gold:         #c4a858;
+    --gold-dim:     #3a3010;
+  }
+
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘Jost’, sans-serif;
+font-weight: 300;
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+}
+
+/* grain */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+pointer-events: none;
+z-index: 999;
+opacity: 0.3;
+background-image: url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 300 300’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘n’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.8’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23n)’ opacity=‘0.04’/%3E%3C/svg%3E”);
+}
+
+/* ── HEADER ── */
+.header {
+padding: 1.25rem 1.5rem 1rem;
+border-bottom: 1px solid var(–border);
+display: flex;
+align-items: flex-end;
+justify-content: space-between;
+position: sticky;
+top: 0;
+background: var(–bg);
+z-index: 100;
+}
+
+.header-eye {
+font-family: ‘DM Mono’, monospace;
+font-size: 0.5rem;
+letter-spacing: 0.3em;
+text-transform: uppercase;
+color: var(–muted);
+margin-bottom: 0.25rem;
+}
+
+.header-title {
+font-family: ‘Lora’, serif;
+font-size: 1.4rem;
+font-weight: 400;
+color: var(–ink);
+}
+
+.header-badge {
+font-family: ‘DM Mono’, monospace;
+font-size: 0.52rem;
+letter-spacing: 0.18em;
+text-transform: uppercase;
+padding: 0.3rem 0.7rem;
+border-radius: 2px;
+border: 1px solid var(–border2);
+color: var(–muted);
+transition: all 0.3s;
+}
+
+.header-badge.night  { border-color: var(–teal);  color: var(–teal-bright);  background: var(–teal-dim); }
+.header-badge.morning { border-color: var(–gold);  color: var(–gold);         background: var(–gold-dim); }
+.header-badge.work   { border-color: var(–brown); color: var(–brown-bright); background: var(–brown-dim); }
+.header-badge.weekend{ border-color: var(–green); color: var(–green-bright); background: var(–green-dim); }
+
+/* ── PROGRESS ── */
+.progress-wrap {
+padding: 0.6rem 1.5rem 0;
+background: var(–surface);
+border-bottom: 1px solid var(–border);
+}
+
+.progress-track {
+height: 2px;
+background: var(–border2);
+border-radius: 2px;
+overflow: hidden;
+margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+height: 100%;
+background: linear-gradient(90deg, var(–teal), var(–green-bright));
+border-radius: 2px;
+transition: width 0.5s ease;
+}
+
+.progress-steps {
+display: flex;
+justify-content: space-between;
+padding-bottom: 0.6rem;
+}
+
+.p-dot {
+font-family: ‘DM Mono’, monospace;
+font-size: 0.45rem;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+color: var(–muted2);
+transition: color 0.3s;
+}
+
+.p-dot.active  { color: var(–green-bright); }
+.p-dot.visited { color: var(–muted); }
+
+/* ── MAIN ── */
+.main {
+flex: 1;
+display: flex;
+flex-direction: column;
+}
+
+/* ── SCREENS ── */
+.screen {
+display: none;
+flex-direction: column;
+flex: 1;
+padding: 1.75rem 1.5rem 5rem;
+animation: rise 0.3s ease;
+overflow-y: auto;
+}
+
+.screen.active { display: flex; }
+
+@keyframes rise {
+from { opacity: 0; transform: translateY(8px); }
+to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── TYPOGRAPHY ── */
+.eye {
+font-family: ‘DM Mono’, monospace;
+font-size: 0.52rem;
+letter-spacing: 0.28em;
+text-transform: uppercase;
+margin-bottom: 0.5rem;
+}
+
+.eye.teal   { color: var(–teal-bright); }
+.eye.green  { color: var(–green-bright); }
+.eye.brown  { color: var(–brown-bright); }
+.eye.gold   { color: var(–gold); }
+.eye.muted  { color: var(–muted); }
+
+.big-q {
+font-family: ‘Lora’, serif;
+font-size: 1.3rem;
+font-weight: 400;
+font-style: italic;
+color: var(–ink);
+line-height: 1.45;
+margin-bottom: 0.4rem;
+}
+
+.sub-q {
+font-size: 0.78rem;
+color: var(–muted);
+font-style: italic;
+margin-bottom: 1.5rem;
+line-height: 1.6;
+}
+
+/* ── CARDS ── */
+.card {
+background: var(–surface2);
+border: 1px solid var(–border2);
+border-left: 3px solid var(–teal);
+border-radius: 3px;
+padding: 0.9rem 1.1rem;
+margin-bottom: 1rem;
+}
+
+.card.green  { border-left-color: var(–green-bright); }
+.card.brown  { border-left-color: var(–brown-bright); }
+.card.gold   { border-left-color: var(–gold); }
+.card.dim    { border-left-color: var(–border2); }
+.card.night  { border-left-color: var(–teal); }
+
+.card-label {
+font-family: ‘DM Mono’, monospace;
+font-size: 0.5rem;
+letter-spacing: 0.2em;
+text-transform: uppercase;
+margin-bottom: 0.35rem;
+color: var(–teal-bright);
+}
+
+.card.green .card-label  { color: var(–green-bright); }
+.card.brown .card-label  { color: var(–brown-bright); }
+.card.gold  .card-label  { color: var(–gold); }
+.card.dim   .card-label  { color: var(–muted); }
+
+.card-text {
+font-size: 0.85rem;
+color: var(–text-dim);
+line-height: 1.6;
+}
+
+.card-text strong { color: var(–text); font-weight: 500; }
+
+/* ── CHOICES ── */
+.choices {
+display: flex;
+flex-direction: column;
+gap: 0.55rem;
+margin-bottom: 1.25rem;
+}
+
+.ch {
+background: var(–surface2);
+border: 1px solid var(–border2);
+border-radius: 3px;
+padding: 0.9rem 1.1rem;
+cursor: pointer;
+text-align: left;
+transition: all 0.2s;
+display: flex;
+gap: 0.85rem;
+align-items: flex-start;
+width: 100%;
+}
+
+.ch:hover         { border-color: var(–teal);  background: var(–teal-dim); }
+.ch.green:hover   { border-color: var(–green); background: var(–green-dim); }
+.ch.brown:hover   { border-color: var(–brown); background: var(–brown-dim); }
+.ch.gold:hover    { border-color: var(–gold);  background: var(–gold-dim); }
+.ch.selected      { border-color: var(–teal);  background: var(–teal-dim); }
+.ch.sel-green     { border-color: var(–green); background: var(–green-dim); }
+.ch.sel-brown     { border-color: var(–brown); background: var(–brown-dim); }
+
+.ch-icon  { font-size: 0.9rem; opacity: 0.7; flex-shrink: 0; margin-top: 1px; }
+.ch-title { font-size: 0.9rem; font-weight: 500; color: var(–ink); margin-bottom: 0.1rem; line-height: 1.3; }
+.ch-sub   { font-size: 0.72rem; color: var(–text-dim); line-height: 1.4; }
+
+/* ── ENERGY GRID ── */
+.energy-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 0.5rem;
+margin-bottom: 1.25rem;
+}
+
+.en-card {
+background: var(–surface2);
+border: 1px solid var(–border2);
+border-radius: 3px;
+padding: 0.85rem 0.9rem;
+cursor: pointer;
+transition: all 0.2s;
+}
+
+.en-card:hover    { border-color: var(–teal); background: var(–teal-dim); }
+.en-card.selected { border-color: var(–teal); background: var(–teal-dim); }
+
+.en-icon { font-size: 1rem; margin-bottom: 0.25rem; display: block; }
+.en-name { font-family: ‘DM Mono’, monospace; font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(–teal-bright); margin-bottom: 0.15rem; }
+.en-desc { font-size: 0.7rem; color: var(–text-dim); line-height: 1.3; }
+
+/* ── TASK SLOTS ── */
+.task-slots { margin-bottom: 1.25rem; }
+
+.task-slot {
+background: var(–surface2);
+border: 1px solid var(–border2);
+border-radius: 3px;
+margin-bottom: 0.6rem;
+overflow: hidden;
+transition: border-color 0.2s;
+}
+
+.task-slot:focus-within { border-color: var(–border2); }
+
+.slot-header {
+display: flex;
+align-items: center;
+gap: 0.6rem;
+padding: 0.45rem 0.75rem;
+background: var(–surface3);
+border-bottom: 1px solid var(–border);
+}
+
+.slot-num {
+font-family: ‘DM Mono’, monospace;
+font-size: 0.62rem;
+color: var(–teal-bright);
+}
+
+.slot-tag {
+font-family: ‘DM Mono’, monospace;
+font-size: 0.48rem;
+letter-spacing: 0.1em;
+text-transform: uppercase;
+padding: 0.15rem 0.4rem;
+border-radius: 2px;
+cursor: pointer;
+border: 1px solid transparent;
+transition: all 0.2s;
+}
+
+.tag-top  { background: var(–brown-dim); color: var(–brown-bright); border-color: var(–brown); }
+.tag-mid  { background: var(–teal-dim);  color: var(–teal-bright);  border-color: var(–teal); }
+.tag-low  { background: var(–surface3);  color: var(–muted);        border-color: var(–border2); }
+
+.slot-input {
+width: 100%;
+background: transparent;
+border: none;
+outline: none;
+color: var(–ink);
+font-family: ‘Jost’, sans-serif;
+font-size: 0.9rem;
+font-weight: 300;
+padding: 0.65rem 0.85rem;
+line-height: 1.5;
+margin: 0;
+}
+
+.slot-input::placeholder { color: var(–muted2); }
+
+/* ── TEXTAREA / INPUT ── */
+textarea {
+width: 100%;
+background: var(–surface2);
+border: 1px solid var(–border2);
+border-radius: 3px;
+color: var(–ink);
+font-family: ‘Jost’, sans-serif;
+font-size: 0.9rem;
+font-weight: 300;
+padding: 0.75rem 0.9rem;
+outline: none;
+transition: border-color 0.2s;
+line-height: 1.6;
+margin-bottom: 1.1rem;
+resize: none;
+}
+
+textarea:focus { border-color: var(–teal); }
+textarea::placeholder { color: var(–muted2); }
+
+.field-label {
+font-family: ‘DM Mono’, monospace;
+font-size: 0.52rem;
+letter-spacing: 0.2em;
+text-transform: uppercase;
+color: var(–muted);
+margin-bottom: 0.4rem;
+display: block;
+}
+
+/* ── CHECKLIST ── */
+.checklist { margin-bottom: 1.25rem; }
+
+.ck-item {
+display: flex;
+gap: 0.75rem;
+align-items: flex-start;
+padding: 0.65rem 0;
+border-bottom: 1px solid var(–border);
+cursor: pointer;
+}
+
+.ck-item:last-child { border-bottom: none; }
+
+.ck-box {
+width: 18px; height: 18px;
+border: 1px solid var(–border2);
+border-radius: 2px;
+flex-shrink: 0;
+margin-top: 1px;
+display: flex;
+align-items: center;
+justify-content: center;
+background: var(–surface2);
+transition: all 0.2s;
+}
+
+.ck-item.checked .ck-box {
+background: var(–teal);
+border-color: var(–teal);
+}
+
+.ck-item.checked .ck-box::after {
+content: ‘✓’;
+color: white;
+font-size: 9px;
+font-weight: bold;
+}
+
+.ck-text {
+font-size: 0.87rem;
+color: var(–text-dim);
+line-height: 1.5;
+transition: color 0.2s;
+}
+
+.ck-item.checked .ck-text {
+color: var(–muted2);
+text-decoration: line-through;
+text-decoration-color: var(–border2);
+}
+
+/* ── NAV ── */
+.bottom-bar {
+position: fixed;
+bottom: 0; left: 0; right: 0;
+background: var(–surface);
+border-top: 1px solid var(–border);
+padding: 0.75rem 1.5rem;
+display: flex;
+gap: 0.5rem;
+z-index: 100;
+}
+
+.btn-primary {
+flex: 1;
+background: var(–teal-dim);
+border: 1px solid var(–teal);
+color: var(–teal-bright);
+font-family: ‘DM Mono’, monospace;
+font-size: 0.6rem;
+letter-spacing: 0.18em;
+text-transform: uppercase;
+padding: 0.8rem;
+border-radius: 3px;
+cursor: pointer;
+transition: all 0.2s;
+}
+
+.btn-primary:hover    { background: var(–teal);  color: var(–bg); }
+.btn-primary.green    { background: var(–green-dim); border-color: var(–green); color: var(–green-bright); }
+.btn-primary.green:hover { background: var(–green); color: var(–bg); }
+.btn-primary.brown    { background: var(–brown-dim); border-color: var(–brown); color: var(–brown-bright); }
+.btn-primary.brown:hover { background: var(–brown); color: var(–bg); }
+.btn-primary.gold     { background: var(–gold-dim);  border-color: var(–gold);  color: var(–gold); }
+.btn-primary.gold:hover  { background: var(–gold);  color: var(–bg); }
+.btn-primary:disabled { opacity: 0.3; cursor: default; }
+.btn-primary:disabled:hover { background: var(–teal-dim); color: var(–teal-bright); }
+
+.btn-back {
+background: none;
+border: 1px solid var(–border2);
+color: var(–muted);
+font-family: ‘DM Mono’, monospace;
+font-size: 0.58rem;
+letter-spacing: 0.15em;
+text-transform: uppercase;
+padding: 0.8rem 1rem;
+border-radius: 3px;
+cursor: pointer;
+transition: all 0.2s;
+}
+
+.btn-back:hover { border-color: var(–muted); color: var(–text-dim); }
+
+/* ── PHASE DIVIDER ── */
+.phase-divider {
+display: flex;
+align-items: center;
+gap: 0.75rem;
+margin-bottom: 1.5rem;
+padding-bottom: 1.5rem;
+border-bottom: 1px solid var(–border);
+}
+
+.phase-line { flex: 1; height: 1px; background: var(–border); }
+
+.phase-label {
+font-family: ‘DM Mono’, monospace;
+font-size: 0.5rem;
+letter-spacing: 0.22em;
+text-transform: uppercase;
+color: var(–muted2);
+}
+
+/* ── DONE SCREEN ── */
+.done-icon { font-size: 2rem; text-align: center; display: block; margin-bottom: 0.75rem; }
+.done-title { font-family: ‘Lora’, serif; font-size: 1.3rem; font-weight: 400; text-align: center; color: var(–ink); margin-bottom: 0.3rem; }
+.done-sub { text-align: center; font-size: 0.78rem; color: var(–muted); font-style: italic; margin-bottom: 1.75rem; }
+
+hr.d { border: none; border-top: 1px solid var(–border); margin: 1.1rem 0; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(–bg); }
+::-webkit-scrollbar-thumb { background: var(–border2); border-radius: 2px; }
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-eye">Daily Planning Coach</div>
+    <div class="header-title">The Day</div>
+  </div>
+  <div class="header-badge" id="phaseBadge">—</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+  <div class="progress-steps" id="progressSteps"></div>
+</div>
+
+<div class="main">
+
+  <!-- ══════════════════════════════════════════
+       HOME — PICK A SESSION
+  ══════════════════════════════════════════ -->
+
+  <div class="screen active" id="s-home">
+    <div class="eye gold">Welcome</div>
+    <div class="big-q">What kind of session is this?</div>
+    <div class="sub-q">Pick what you need right now and the guide will shape itself around it.</div>
+
+```
+<div class="choices">
+  <button class="ch" onclick="startSession('night')">
+    <span class="ch-icon">◌</span>
+    <div>
+      <div class="ch-title">Night before</div>
+      <div class="ch-sub">Close today, look at tomorrow, set your three tasks for the day ahead</div>
+    </div>
+  </button>
+  <button class="ch green" onclick="startDayTypeSelect()">
+    <span class="ch-icon">✦</span>
+    <div>
+      <div class="ch-title">Morning check-in</div>
+      <div class="ch-sub">Full picture — energy, tasks, intention, and anything to prepare for</div>
+    </div>
+  </button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MORNING: DAY TYPE
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-daytype">
+    <div class="eye gold">Morning · First things first</div>
+    <div class="big-q">What kind of day is today?</div>
+    <div class="sub-q">This shapes the whole check-in.</div>
+
+```
+<div class="choices">
+  <button class="ch brown" onclick="selectDayType('office')">
+    <span class="ch-icon">◇</span>
+    <div>
+      <div class="ch-title">Office day — Tuesday, Wednesday, or Thursday</div>
+      <div class="ch-sub">Commuting, in-person, Big Four energy</div>
+    </div>
+  </button>
+  <button class="ch brown" onclick="selectDayType('wfh')">
+    <span class="ch-icon">⌂</span>
+    <div>
+      <div class="ch-title">WFH day — Monday or Friday</div>
+      <div class="ch-sub">Home, more control over the day, boundary between corporate and personal</div>
+    </div>
+  </button>
+  <button class="ch green" onclick="selectDayType('weekend')">
+    <span class="ch-icon">〜</span>
+    <div>
+      <div class="ch-title">Weekend — Saturday or Sunday</div>
+      <div class="ch-sub">Open, personal, business work and real life</div>
+    </div>
+  </button>
+</div>
+
+<div class="bottom-bar">
+  <button class="btn-back" onclick="goTo('s-home')">← Back</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MORNING: ENERGY CHECK-IN
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-energy">
+    <div class="eye gold">Morning · Energy check-in</div>
+    <div class="big-q">How does your body actually feel right now?</div>
+    <div class="sub-q">Check in before the day tells you what to feel. This shapes which tasks you reach for first.</div>
+
+```
+<div class="energy-grid">
+  <div class="en-card" onclick="selectEnergy('Visioning', this)">
+    <span class="en-icon">🌅</span>
+    <div class="en-name">Visioning</div>
+    <div class="en-desc">Expansive, dreamy, big picture</div>
+  </div>
+  <div class="en-card" onclick="selectEnergy('Creating', this)">
+    <span class="en-icon">✦</span>
+    <div class="en-name">Creating</div>
+    <div class="en-desc">Generative, building, making</div>
+  </div>
+  <div class="en-card" onclick="selectEnergy('Deep Focus', this)">
+    <span class="en-icon">◎</span>
+    <div class="en-name">Deep Focus</div>
+    <div class="en-desc">Locked in, analytical, sustained</div>
+  </div>
+  <div class="en-card" onclick="selectEnergy('Flowing', this)">
+    <span class="en-icon">〜</span>
+    <div class="en-name">Flowing</div>
+    <div class="en-desc">Responsive, adaptive, easy</div>
+  </div>
+  <div class="en-card" onclick="selectEnergy('Connecting', this)">
+    <span class="en-icon">◇</span>
+    <div class="en-name">Connecting</div>
+    <div class="en-desc">Social, relational, outward</div>
+  </div>
+  <div class="en-card" onclick="selectEnergy('Restoring', this)">
+    <span class="en-icon">◌</span>
+    <div class="en-name">Restoring</div>
+    <div class="en-desc">Low, recovering, gentle only</div>
+  </div>
+  <div class="en-card" onclick="selectEnergy('Moving', this)">
+    <span class="en-icon">→</span>
+    <div class="en-name">Moving</div>
+    <div class="en-desc">Physical, active, want to do</div>
+  </div>
+</div>
+
+<div id="energyGuidance"></div>
+
+<div class="bottom-bar">
+  <button class="btn-back" onclick="goTo('s-daytype')">← Back</button>
+  <button class="btn-primary gold" id="energyNext" onclick="goToTasks()" disabled>Next →</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MORNING: TASKS
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-tasks">
+    <div class="eye gold">Morning · Your three</div>
+    <div class="big-q" id="tasksTitle">What are you actually doing today?</div>
+    <div class="sub-q" id="tasksSub">Open Griply. Look at your This Week list. Pick the three that match your energy and anchors. Then confirm them here.</div>
+
+```
+<div class="card dim">
+  <div class="card-label">How to pick</div>
+  <div class="card-text" id="taskPickGuidance">—</div>
+</div>
+
+<div class="task-slots">
+  <div class="task-slot">
+    <div class="slot-header">
+      <span class="slot-num">01</span>
+      <span class="slot-tag tag-top" onclick="cycleTag(this)">Top</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.48rem;color:var(--muted);margin-left:auto;" id="energy-label-0"></span>
+    </div>
+    <input class="slot-input" type="text" placeholder="Most important thing today...">
+  </div>
+  <div class="task-slot">
+    <div class="slot-header">
+      <span class="slot-num">02</span>
+      <span class="slot-tag tag-top" onclick="cycleTag(this)">Top</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.48rem;color:var(--muted);margin-left:auto;" id="energy-label-1"></span>
+    </div>
+    <input class="slot-input" type="text" placeholder="Second thing...">
+  </div>
+  <div class="task-slot">
+    <div class="slot-header">
+      <span class="slot-num">03</span>
+      <span class="slot-tag tag-mid" onclick="cycleTag(this)">Mid</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.48rem;color:var(--muted);margin-left:auto;" id="energy-label-2"></span>
+    </div>
+    <input class="slot-input" type="text" placeholder="Third thing...">
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <button class="btn-back" onclick="goTo('s-energy')">← Back</button>
+  <button class="btn-primary gold" onclick="goTo('s-intention')">Next →</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MORNING: INTENTION
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-intention">
+    <div class="eye gold">Morning · Intention</div>
+    <div class="big-q">How do you want to show up today?</div>
+    <div class="sub-q">Not what you want to get done — how you want to feel and move through the day. One sentence is enough.</div>
+
+```
+<div class="card dim">
+  <div class="card-label">Examples</div>
+  <div class="card-text">
+    "I want to stay grounded and not get pulled into reactive mode at work." ·
+    "I want to make real progress on the business without guilt about the day job." ·
+    "I want today to feel intentional, not like I just got through it."
+  </div>
+</div>
+
+<label class="field-label">Today's intention</label>
+<textarea id="intentionText" rows="3" placeholder="I want to..."></textarea>
+
+<div class="bottom-bar">
+  <button class="btn-back" onclick="goTo('s-tasks')">← Back</button>
+  <button class="btn-primary gold" onclick="goToPrep()">Next →</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MORNING: PREP — WEEKDAY OFFICE
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-prep-office">
+    <div class="eye brown">Office day · Prepare</div>
+    <div class="big-q">Anything you need to know or handle before the day starts?</div>
+    <div class="sub-q">Think through the day now so you're not caught off guard later.</div>
+
+```
+<div class="checklist">
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">I know what meetings or calls are happening today</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">Any prep needed for those meetings is done or planned</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">I know what deal work or deliverables are due or moving today</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">Bag packed, outfit ready, commute is accounted for</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">I've noted any A Worthy Partner tasks that need to happen outside office hours today</div>
+  </div>
+</div>
+
+<label class="field-label">Anything else on my mind before the day starts</label>
+<textarea rows="2" placeholder="Anything to flag, hold, or be aware of..."></textarea>
+
+<div class="bottom-bar">
+  <button class="btn-back" onclick="goTo('s-intention')">← Back</button>
+  <button class="btn-primary brown" onclick="goTo('s-morning-done')">I'm ready for the day →</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MORNING: PREP — WFH
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-prep-wfh">
+    <div class="eye brown">WFH day · Prepare</div>
+    <div class="big-q">WFH days have more freedom — and more drift risk.</div>
+    <div class="sub-q">Think through the boundary between job work and business work before the day starts.</div>
+
+```
+<div class="checklist">
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">I know what Big Four work has to happen today</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">I know when I'm switching from job mode to business mode today</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">Any meetings or calls are on my radar and prepped</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">My workspace is set up to support focus — not just existing in it</div>
+  </div>
+</div>
+
+<div class="card brown">
+  <div class="card-label">The WFH drift trap</div>
+  <div class="card-text">Home days can feel like they belong to the business before the job is actually done. Name your cutover point now so neither bleeds into the other.</div>
+</div>
+
+<label class="field-label">Anything else to flag or be aware of</label>
+<textarea rows="2" placeholder="Anything to hold or prepare..."></textarea>
+
+<div class="bottom-bar">
+  <button class="btn-back" onclick="goTo('s-intention')">← Back</button>
+  <button class="btn-primary brown" onclick="goTo('s-morning-done')">I'm ready for the day →</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MORNING: PREP — WEEKEND
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-prep-weekend">
+    <div class="eye green">Weekend · Prepare</div>
+    <div class="big-q">What does today actually need to hold?</div>
+    <div class="sub-q">Weekends are personal and open — but they still need a shape or they float. Think through the day now.</div>
+
+```
+<div class="checklist">
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">I know which Saturday mode I'm in (Mode A or Mode B) or what Sunday's sequence is</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">My business task for today is named and I know what I'm sitting down to</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">I know what maintenance or errands need to happen today</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">I've been outside or I'm going outside before anything else starts</div>
+  </div>
+</div>
+
+<div class="card green">
+  <div class="card-label">Weekend drift</div>
+  <div class="card-text">The float happens when the day has no first move. <strong>What's the first thing you're doing after this check-in?</strong> Name it before you close this.</div>
+</div>
+
+<label class="field-label">First move after this</label>
+<textarea id="firstMoveWeekend" rows="2" placeholder="e.g. Shoes on, go outside"></textarea>
+
+<div class="bottom-bar">
+  <button class="btn-back" onclick="goTo('s-intention')">← Back</button>
+  <button class="btn-primary green" onclick="goTo('s-morning-done')">I'm ready →</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       MORNING DONE
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-morning-done">
+    <span class="done-icon">🌿</span>
+    <div class="done-title">You're ready.</div>
+    <div class="done-sub" id="morningDoneSub">Go into the day.</div>
+
+```
+<div class="card gold" id="morningIntentionCard" style="display:none;">
+  <div class="card-label">Your intention today</div>
+  <div class="card-text" id="morningIntentionDisplay">—</div>
+</div>
+
+<div class="card dim">
+  <div class="card-label">If you drift</div>
+  <div class="card-text">Come back to your three tasks. Pick the one that matches your energy right now. Start with the smallest possible first action. That's the whole system.</div>
+</div>
+
+<div class="card dim">
+  <div class="card-label">End of day</div>
+  <div class="card-text">Come back tonight for the night-before check-in. Close today, look at tomorrow, set your three.</div>
+</div>
+
+<div class="bottom-bar">
+  <button class="btn-primary gold" onclick="goTo('s-home')">Done — start another session</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       NIGHT BEFORE — DAY CHECK-IN
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-night-reflect">
+    <div class="eye teal">Night before · 1 of 4</div>
+    <div class="big-q">How did today actually go?</div>
+    <div class="sub-q">Honest check-in. Not a judgment — just seeing it clearly before you close it.</div>
+
+```
+<div class="choices">
+  <button class="ch green" onclick="selectNightFlow('good', this)">
+    <span class="ch-icon">✦</span>
+    <div><div class="ch-title">Good day — I showed up</div><div class="ch-sub">Made real progress, felt intentional</div></div>
+  </button>
+  <button class="ch" onclick="selectNightFlow('okay', this)">
+    <span class="ch-icon">→</span>
+    <div><div class="ch-title">Okay day — got through it</div><div class="ch-sub">Did the work, nothing special</div></div>
+  </button>
+  <button class="ch" onclick="selectNightFlow('drift', this)">
+    <span class="ch-icon">〜</span>
+    <div><div class="ch-title">Drifted — harder than I wanted</div><div class="ch-sub">Lost momentum somewhere</div></div>
+  </button>
+  <button class="ch" onclick="selectNightFlow('hard', this)">
+    <span class="ch-icon">△</span>
+    <div><div class="ch-title">Hard day — I'm carrying something</div><div class="ch-sub">Emotionally or physically depleted</div></div>
+  </button>
+</div>
+
+<div id="nightFlowResponse"></div>
+
+<div class="bottom-bar">
+  <button class="btn-back" onclick="goTo('s-home')">← Back</button>
+  <button class="btn-primary" id="nightReflectNext" onclick="goTo('s-night-carry')" disabled>Next →</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       NIGHT BEFORE — WHAT ARE YOU CARRYING
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-night-carry">
+    <div class="eye teal">Night before · 2 of 4</div>
+    <div class="big-q">Is there anything you need to put down before tomorrow?</div>
+    <div class="sub-q">Unfinished thoughts, tension from work, anything that's still running in the background. Name it so it's not haunting you at 2am.</div>
+
+```
+<label class="field-label">What I'm carrying (or "nothing" if you're clear)</label>
+<textarea rows="3" placeholder="e.g. Still thinking about that comment in the meeting. Feeling behind on the business. Need to stop and not let it follow me into tomorrow."></textarea>
+
+<div class="card dim">
+  <div class="card-label">You don't have to resolve it</div>
+  <div class="card-text">You just have to name it and consciously set it down. Writing it out moves it from your nervous system to the page. That's enough for tonight.</div>
+</div>
+
+<div class="bottom-bar">
+  <button class="btn-back" onclick="goTo('s-night-reflect')">← Back</button>
+  <button class="btn-primary" onclick="goTo('s-night-tomorrow')">Next →</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       NIGHT BEFORE — LOOK AT TOMORROW
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-night-tomorrow">
+    <div class="eye teal">Night before · 3 of 4</div>
+    <div class="big-q">What does tomorrow look like?</div>
+    <div class="sub-q">Before you set your three tasks, scan tomorrow so nothing surprises you.</div>
+
+```
+<div class="checklist">
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">I know if tomorrow is an office day, WFH, or weekend</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">Any meetings, appointments, or commitments are on my radar</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">I know if there's anything that needs to be prepared tonight</div>
+  </div>
+  <div class="ck-item" onclick="toggleCk(this)">
+    <div class="ck-box"></div>
+    <div class="ck-text">Outfit, bag, or anything physical is handled</div>
+  </div>
+</div>
+
+<label class="field-label">Anything worth noting about tomorrow</label>
+<textarea rows="2" placeholder="e.g. Heavy deal day tomorrow, leave business stuff for evening. Or: free morning, get outside first thing."></textarea>
+
+<div class="bottom-bar">
+  <button class="btn-back" onclick="goTo('s-night-carry')">← Back</button>
+  <button class="btn-primary" onclick="goTo('s-night-tasks')">Next →</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       NIGHT BEFORE — SET TOMORROW'S THREE
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-night-tasks">
+    <div class="eye teal">Night before · 4 of 4</div>
+    <div class="big-q">What are tomorrow's three tasks?</div>
+    <div class="sub-q">Open Griply. Look at your This Week list. Pick three that are realistic for tomorrow given what you know about the day. You can adjust in the morning — but having them named tonight means you wake up with direction.</div>
+
+```
+<div class="card">
+  <div class="card-label">How to pick</div>
+  <div class="card-text">
+    First, look for anything <strong>dated tomorrow</strong> — those go first, no decision needed.
+    Then pull from your <strong>Top Priority</strong> tasks in This Week.
+    Then match to your <strong>energy context</strong> — what do you think tomorrow will feel like?
+  </div>
+</div>
+
+<div class="task-slots">
+  <div class="task-slot">
+    <div class="slot-header">
+      <span class="slot-num">01</span>
+      <span class="slot-tag tag-top" onclick="cycleTag(this)">Top</span>
+    </div>
+    <input class="slot-input" type="text" placeholder="Most important thing tomorrow...">
+  </div>
+  <div class="task-slot">
+    <div class="slot-header">
+      <span class="slot-num">02</span>
+      <span class="slot-tag tag-top" onclick="cycleTag(this)">Top</span>
+    </div>
+    <input class="slot-input" type="text" placeholder="Second thing...">
+  </div>
+  <div class="task-slot">
+    <div class="slot-header">
+      <span class="slot-num">03</span>
+      <span class="slot-tag tag-mid" onclick="cycleTag(this)">Mid</span>
+    </div>
+    <input class="slot-input" type="text" placeholder="Third thing...">
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <button class="btn-back" onclick="goTo('s-night-tomorrow')">← Back</button>
+  <button class="btn-primary" onclick="goTo('s-night-done')">Tomorrow is set →</button>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       NIGHT DONE
+  ══════════════════════════════════════════ -->
+
+  <div class="screen" id="s-night-done">
+    <span class="done-icon" style="color:var(--teal-bright);">◌</span>
+    <div class="done-title">Today is closed.</div>
+    <div class="done-sub">Tomorrow is ready. Rest now.</div>
+
+```
+<div class="card night">
+  <div class="card-label">You handled</div>
+  <div class="card-text">Reflected on the day · Named what you're carrying · Scanned tomorrow · Set your three tasks. That's the whole night-before ritual.</div>
+</div>
+
+<div class="card dim">
+  <div class="card-label">Tomorrow morning</div>
+  <div class="card-text">Come back for the full morning check-in — energy, confirm your three, set intention, prepare for the day type. The tasks are already waiting.</div>
+</div>
+
+<div class="bottom-bar">
+  <button class="btn-primary" onclick="goTo('s-home')">Done</button>
+</div>
+```
+
+  </div>
+
+</div>
+
+<script>
+  // ── Pure coaching, zero storage, zero persistence ─────────────────────────
+  // All state is session-only — page reload resets everything intentionally.
+
+  let session = {
+    phase: 'home',      // home | night | morning
+    dayType: null,      // office | wfh | weekend
+    energy: null,
+    nightFlow: null
+  };
+
+  // ── PROGRESS CONFIGS ──────────────────────────────────────────────────────
+  const PROGRESS = {
+    night:   ['Reflect','Carry','Tomorrow','Three Tasks','Done'],
+    morning: ['Day Type','Energy','Your Three','Intention','Prepare','Ready'],
+  };
+
+  const SCREEN_PROGRESS = {
+    's-night-reflect':  { phase:'night',   idx:0 },
+    's-night-carry':    { phase:'night',   idx:1 },
+    's-night-tomorrow': { phase:'night',   idx:2 },
+    's-night-tasks':    { phase:'night',   idx:3 },
+    's-night-done':     { phase:'night',   idx:4 },
+    's-daytype':        { phase:'morning', idx:0 },
+    's-energy':         { phase:'morning', idx:1 },
+    's-tasks':          { phase:'morning', idx:2 },
+    's-intention':      { phase:'morning', idx:3 },
+    's-prep-office':    { phase:'morning', idx:4 },
+    's-prep-wfh':       { phase:'morning', idx:4 },
+    's-prep-weekend':   { phase:'morning', idx:4 },
+    's-morning-done':   { phase:'morning', idx:5 },
+  };
+
+  // ── NAVIGATION ─────────────────────────────────────────────────────────────
+  function goTo(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+    updateProgress(id);
+    updateBadge(id);
+    window.scrollTo(0, 0);
+  }
+
+  function updateProgress(screenId) {
+    const info = SCREEN_PROGRESS[screenId];
+    if (!info) {
+      document.getElementById('progressFill').style.width = '0%';
+      document.getElementById('progressSteps').innerHTML = '';
+      return;
+    }
+    const labels = PROGRESS[info.phase];
+    const pct    = Math.round((info.idx / (labels.length - 1)) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressSteps').innerHTML = labels.map((l, i) => {
+      let cls = 'p-dot';
+      if (i < info.idx)      cls += ' visited';
+      else if (i === info.idx) cls += ' active';
+      return `<span class="${cls}">${l}</span>`;
+    }).join('');
+  }
+
+  function updateBadge(screenId) {
+    const badge = document.getElementById('phaseBadge');
+    if (screenId === 's-home')         { badge.className = 'header-badge'; badge.textContent = '—'; return; }
+    if (screenId.startsWith('s-night')) { badge.className = 'header-badge night'; badge.textContent = 'Night before'; return; }
+    if (session.dayType === 'office')  { badge.className = 'header-badge work'; badge.textContent = 'Office day'; }
+    else if (session.dayType === 'wfh'){ badge.className = 'header-badge work'; badge.textContent = 'WFH day'; }
+    else if (session.dayType === 'weekend') { badge.className = 'header-badge weekend'; badge.textContent = 'Weekend'; }
+    else { badge.className = 'header-badge morning'; badge.textContent = 'Morning'; }
+  }
+
+  // ── SESSION STARTERS ───────────────────────────────────────────────────────
+  function startSession(type) {
+    session.phase = type;
+    if (type === 'night') {
+      goTo('s-night-reflect');
+    }
+  }
+
+  function startDayTypeSelect() {
+    session.phase = 'morning';
+    goTo('s-daytype');
+  }
+
+  function selectDayType(type) {
+    session.dayType = type;
+    updateBadge('s-energy');
+    goTo('s-energy');
+  }
+
+  // ── ENERGY ────────────────────────────────────────────────────────────────
+  const ENERGY_GUIDANCE = {
+    'Visioning':   { pick: 'Lean toward big-picture business tasks — strategy, ideas, orientation. Not detail work.', skip: 'Avoid deep admin, heavy analysis, or reactive corporate tasks if you can.' },
+    'Creating':    { pick: 'Content, writing, building — anything that involves making something from scratch.', skip: 'Avoid purely consuming tasks. This energy wants to output, not input.' },
+    'Deep Focus':  { pick: 'Your heaviest cognitive work. Deal analysis, QBO deep dives, complex writing.', skip: 'Don\'t waste this on email or admin. This is rare — use it on what matters most.' },
+    'Flowing':     { pick: 'Responsive tasks, lighter admin, following up, anything you can move through easily.', skip: 'Don\'t force deep creative or analytical work. Go with the current.' },
+    'Connecting':  { pick: 'Outreach DMs, client relationship work, meetings, any people-facing tasks.', skip: 'This isn\'t the day for heads-down solo work if you can help it.' },
+    'Restoring':   { pick: 'Maintenance tasks only — light admin, review, anything low-demand.', skip: 'Don\'t push into deep work. Your system needs to recover. Honour it.' },
+    'Moving':      { pick: 'Tasks that feel physical or hands-on. Movement first if you haven\'t already.', skip: 'Don\'t sit and try to think. Let the body lead.' },
+  };
+
+  function selectEnergy(type, card) {
+    session.energy = type;
+    document.querySelectorAll('.en-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('energyNext').disabled = false;
+
+    const g = ENERGY_GUIDANCE[type];
+    document.getElementById('energyGuidance').innerHTML = g ? `
+      <div class="card" style="margin-top:0.75rem;">
+        <div class="card-label">Tasks to reach for</div>
+        <div class="card-text">${g.pick}</div>
+      </div>
+      <div class="card dim">
+        <div class="card-label">Tasks to avoid or defer</div>
+        <div class="card-text">${g.skip}</div>
+      </div>` : '';
+  }
+
+  function goToTasks() {
+    // Set task pick guidance based on day type + energy
+    const dayLabels = { office:'office', wfh:'WFH', weekend:'weekend' };
+    const day = dayLabels[session.dayType] || 'today';
+
+    let guidance = `Dated tasks first — if anything in Griply is tagged for today, those go first. Then look at your <strong>Top Priority This Week</strong> tasks. Then pick the ones that match your <strong>${session.energy}</strong> energy.`;
+
+    if (session.dayType === 'office') {
+      guidance += ` Remember: office days are Big Four first. Business tasks land in whatever energy is left — evenings or commute.`;
+    } else if (session.dayType === 'wfh') {
+      guidance += ` WFH day means you have more flexibility — but be honest about which hours belong to the job and which belong to the business. Don't mix them.`;
+    } else if (session.dayType === 'weekend') {
+      guidance += ` Weekend: your business task should already be named from your setup. That's task 1. The other two come from personal and maintenance needs.`;
+    }
+
+    document.getElementById('taskPickGuidance').innerHTML = guidance;
+
+    // Set energy labels on slots
+    for (let i = 0; i < 3; i++) {
+      const el = document.getElementById(`energy-label-${i}`);
+      if (el) el.textContent = session.energy || '';
+    }
+
+    const title = document.getElementById('tasksTitle');
+    if (session.dayType === 'weekend') {
+      title.textContent = 'Confirm what you\'re actually doing today.';
+    } else {
+      title.textContent = 'What are you actually doing today?';
+    }
+
+    goTo('s-tasks');
+  }
+
+  // ── PREP ROUTING ───────────────────────────────────────────────────────────
+  function goToPrep() {
+    const intention = document.getElementById('intentionText').value.trim();
+    const card = document.getElementById('morningIntentionCard');
+    const display = document.getElementById('morningIntentionDisplay');
+
+    if (intention) {
+      card.style.display = 'block';
+      display.textContent = intention;
+    }
+
+    if (session.dayType === 'office')  goTo('s-prep-office');
+    else if (session.dayType === 'wfh')goTo('s-prep-wfh');
+    else                               goTo('s-prep-weekend');
+  }
+
+  // Done sub copy based on day type
+  function setupMorningDone() {
+    const subs = {
+      office:  'Go into the office as yourself — not just as a Big Four employee.',
+      wfh:     'Protect both modes today. The job and the business both deserve your full presence.',
+      weekend: 'You know the sequence. Start with outside. The rest follows.',
+    };
+    document.getElementById('morningDoneSub').textContent = subs[session.dayType] || 'Go into the day.';
+  }
+
+  // ── NIGHT FLOW ─────────────────────────────────────────────────────────────
+  const NIGHT_RESPONSES = {
+    good:  null,
+    okay:  { cls:'dim', label:'That\'s most days', text:'Consistent, undramatic days are the backbone of everything. Nothing to fix here.' },
+    drift: { cls:'brown', label:'Name where it broke', text:'When did the drift start? Was it morning, after a block ended, or something that came up? Notice it without judgment — it\'s data for tomorrow.' },
+    hard:  { cls:'',     label:'Put it down gently', text:'You don\'t have to process everything tonight. The next step is just to name what\'s heavy and consciously set it aside. Tomorrow is a new container.' },
+  };
+
+  function selectNightFlow(type, btn) {
+    session.nightFlow = type;
+    document.querySelectorAll('#s-night-reflect .ch').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('nightReflectNext').disabled = false;
+
+    const resp = NIGHT_RESPONSES[type];
+    const area = document.getElementById('nightFlowResponse');
+    if (resp) {
+      area.innerHTML = `
+        <div class="card ${resp.cls}" style="margin-top:0.75rem;">
+          <div class="card-label">${resp.label}</div>
+          <div class="card-text">${resp.text}</div>
+        </div>`;
+    } else {
+      area.innerHTML = `
+        <div class="card green" style="margin-top:0.75rem;">
+          <div class="card-label">Good</div>
+          <div class="card-text">Notice what made it good. Was it the energy match? The setup? Starting early? That's worth carrying forward.</div>
+        </div>`;
+    }
+  }
+
+  // ── TAG CYCLING ───────────────────────────────────────────────────────────
+  const TAGS = ['Top','Mid','Low'];
+  const TAG_CLS = { Top:'tag-top', Mid:'tag-mid', Low:'tag-low' };
+
+  function cycleTag(el) {
+    const idx  = TAGS.indexOf(el.textContent);
+    const next = TAGS[(idx + 1) % TAGS.length];
+    el.textContent = next;
+    el.className = 'slot-tag ' + TAG_CLS[next];
+  }
+
+  // ── CHECKLIST ─────────────────────────────────────────────────────────────
+  function toggleCk(item) { item.classList.toggle('checked'); }
+
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  updateProgress('s-home');
+
+  // Patch morning done to set sub-copy
+  const origGoTo = goTo;
+  // Override to add side effects on specific screens
+  window.goTo = function(id) {
+    origGoTo(id);
+    if (id === 's-morning-done') setupMorningDone();
+  };
+</script>
+
+</body>
+</html>
